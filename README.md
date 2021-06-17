@@ -54,7 +54,12 @@ pip install -r requirements.txt
 
 1. Crear Hola mundo
 
-2. Añadir limitadores
+2. Añadir limitadores (checar documentación oficial y copiar el código escribiendo lo siguiente al final del código)
+
+```
+if __name__ == "__main__":
+    app.run(debug=True)
+```
 
 ## Pasos con Flask restful
 
@@ -73,45 +78,125 @@ from flask_apispec.extension import FlaskApiSpec
 from flask_sqlalchemy import SQLAlchemy
 ```
 
-2. Instanciar Flask, Api y ejecutar aplicación.
+2. Instanciar Flask y Api.
+
+```
+app = Flask(__name__)
+api = Api(app)
+```
 
 3. Crear una clase con un método get y heredar de Resource.
 
+```
+class AzureStorage(Resource):
+    
+    def get(self):
+        '''Método GET'''
+        return {'data':'Hello'}
+
+```
+
 4. Añadir el recurso a la instancia de Api.
 
-5. Realizar una petición GET desde el navegador y desde otro script.
+```
+api.add_resource(Images, '/Storage')
+```
+
+5. Realizar una petición GET desde el navegador y desde otro script llamado request.py.
+
+```
+import requests
+
+BASE_ENDPOINT = 'http://127.0.0.1:5000'
+
+response = requests.get(BASE_ENDPOINT + '/Storage')
+print(response.json())
+```
 
 6. Añadir un método POST.
 
+```
+def post(self, image_id, **kwargs):
+        '''Método POST'''
+        pass
+```
+
 7. Instanciar RequestParser()
+
+```
+image_post_args = reqparse.RequestParser()
+```
 
 8. Agregar argumentos
 
+```
+image_post_args.add_argument("nombre", type = str, help = "El nombre de la imagen es obligatorio", required = True)
+image_post_args.add_argument("formato", type = str, help = "El formato de la imagen es obligatorio", required = True)
+image_post_args.add_argument("size", type = int, help = "El tamaño de la imagen es obligatorio", required = True)
+```
+
 9. LLamar a parse_args() en el método post
 
-10. Probar script con Post
+```
+def post(self, image_id, **kwargs):
+        '''Método POST
+        args = image_post_args.parse_args()
+        images[image_id] = args
+        return images[image_id], 201'''
+```
+
+10. Probar el script request.py con lo siguiente
 
 ```
+import requests
+
+BASE_ENDPOINT = 'http://127.0.0.1:5000'
+
 data = [{"nombre":"oscar","formato":"jpg","size":10},
 {"nombre":"juan","formato":"png","size":17},
 {"nombre":"pedro","formato":"jpeg","size":14}]
 
 for i in range(len(data)):
 
-    response = requests.post(BASE_ENDPOINT + '/images/' + str(i), data[i])
+    response = requests.post(BASE_ENDPOINT + '/Storage/' + str(i), data[i])
     print(response.json())
 
 input()
-response = requests.get(BASE_ENDPOINT + '/images/2')
+response = requests.get(BASE_ENDPOINT + '/Storage/2')
 print(response.json())
 ```
 
+> Durante el taller el problema que se tenía fue que la solicitud de request.py no se había modificado y lo hacía incorrecto. El lado del servidor siempre había estado bien.
+
 11. Crear funciones para evitar errores o sobreescribir valores previos.
 
-abort(409, message = "Imagen existente") 
-abort(404, message = "No se pudo encontrar la imagen")
+```
+def abort_if_image_exist(image_id):
+    if image_id in images:
+        abort(409, message = "Imagen existente") 
+def abort_if_image_does_not_exist(image_id):
+    if image_id not in images:
+        abort(404, message = "No se pudo encontrar la imagen")
+```
 
 12. Crear método delete, utilizar una de las funciones anteriores y usar palabra reservada del
+
+```
+def delete(self, image_id):
+        '''Método DELETE'''
+        abort_if_image_does_not_exist(image_id)
+        del images[image_id]
+        return '', 204
+```
+
+Si se desea probar con request.py cabe mencionar que como no retorna un diccionario (los cuales son serializables) no se puede usar response.json()
+
+```
+response = requests.delete(BASE_ENDPOINT + '/Storage/0')
+print(response)
+```
+
+### Documentación basada en la definición OpenAPI
 
 13. Añadir documentación
 
@@ -127,29 +212,51 @@ app.config.update({
         plugins=[MarshmallowPlugin()],
         openapi_version='2.0.0'
     ),
-    'APISPEC_SWAGGER_URL': '/swagger/',  # URI to access API Doc JSON 
-    'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'  # URI to access UI of API Doc
+    'APISPEC_SWAGGER_URL': '/swagger/',  # URI con la que accedes al json que define tu API
+    'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'  # URI con la que accedes a la UI de la documentación de tu API 
 })
 docs = FlaskApiSpec(app)
 
-docs.register(Images)
+docs.register(AzureStorage) # debe ir después de tu clase AzureStorage
 ```
 
 14. Heredar en la clase principal de MethodResource
 
+```
+class AzureStorage(MethodResource, Resource):
+```
+
 15. Añadir en get, post y delete
 
 ```
- @doc(description='Método HTTP en mi API.', tags=['Images'])
+ @doc(description='Método HTTP en mi API.', tags=['AzureStorage'])
  ```
 
-16. Crear una clase BodySchema que hereda de Schema y usa fields. Ambas de marshmallow
+16. Crear una clase BodySchema que hereda de Schema y usa fields.
+
+ ```
+class BodySchema(Schema):
+
+    nombre = fields.String()
+    formato = fields.String()
+    size = fields.Integer()
+ ```
 
 17. Añadir en post
 
 ```
 @use_kwargs(BodySchema)
 ```
+
+> Uno de los motivos por lo que no funcionó el POST desde la documentación durante el taller fue que faltó añadir un argumento al método
+
+```
+def post(self, image_id, **kwargs):
+```
+
+Sin kwargs, regresa un estatus 500.
+
+### Inclusión de una base de datos para evitar el uso de la memoria.
 
 18. Crear base de datos, importando 
 
@@ -165,6 +272,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
 20. Instanciar SQLAlchemy
 
+```
+db = SQLAlchemy(app)
+```
+
 21. Crear modelo
 
 ```
@@ -176,12 +287,12 @@ class AzureStorageModel(db.Model):
     size = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return f"Imagen(nombre={nombre}, formato={formato}, size={size})"
+        return f"Imagen(nombre={self.nombre}, formato={self.formato}, size={self.size})"
 ```
 
-22. Ejecutar una vez db.create_all()
+22. Ejecutar una vez db.create_all() la cual debe ir después de la clase AzureStorageModel
 
-23. Correr script y quitar db.create_all()
+23. Correr script y quitar db.create_all() porque de otro modo se estaría sobreescribiendo el archivo database.db en cada ejecución, es decir, solo lo hacemos una vez para crear ese archivo.
 
 23. Reemplazar get
 ```
@@ -252,7 +363,7 @@ return {'message':'Imagen borrada'}, 204
 
 30. Probar desde documentación
 
-31. Abrir y realizar consultas desde DB Browser
+31. Abrir y realizar consultas desde DB Browser for SQLite
 
 ## Pasos para publicar API de Python en Azure
 
