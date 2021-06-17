@@ -23,9 +23,15 @@ pip install virtualenv
 ```
 virtualenv myenv –p <path del intérprete de Python>
 ```
+
+En este caso yo lo nombre myenv, pero podrían llamarlo de otra forma
+
 ```
 .\myenv\Scripts\activate
 ```
+
+Si lo llamaron de otra forma es necesario reemplazar el nombre en lo anterior.
+
 ```
 pip install -r requirements.txt
 ```
@@ -38,7 +44,7 @@ pip install -r requirements.txt
 *Extensión*
 - Python
 
-### Dependencias
+### Paquetes y módulos
 
 - Flask
 - Flask-restful
@@ -52,14 +58,16 @@ pip install -r requirements.txt
 
 ## Pasos con Flask
 
-1. Crear Hola mundo
+1. Crear [Hola mundo](https://flask.palletsprojects.com/en/1.1.x/quickstart/)
 
-2. Añadir limitadores (checar documentación oficial y copiar el código escribiendo lo siguiente al final del código)
+2. Añadir limitadores (Copiar el primer [código](https://flask-limiter.readthedocs.io/en/stable/) y escribir lo siguiente al final del mismo)
 
 ```
 if __name__ == "__main__":
     app.run(debug=True)
 ```
+
+3. Probar desde el navegador.
 
 ## Pasos con Flask restful
 
@@ -377,7 +385,7 @@ return {'message':'Imagen borrada'}, 204
 
 5. Conectar con GitHub (autorizar permisos si no se ha hecho antes).
 
-6. Establecer configuración.
+6. Establecer configuración, para ello deberías crear un respositorio y seleccionarlo cuando hayas subido tanto tu código como requirements.txt y database.db
 
 7. Guardar.
 
@@ -385,5 +393,5 @@ return {'message':'Imagen borrada'}, 204
 
 9. Clic en el enlace.
 
-10. Probar con el nuevo endpoint.
+10. Probar request.py con el nuevo endpoint una vez que GitHub Actions haya terminado correctamente.
 
