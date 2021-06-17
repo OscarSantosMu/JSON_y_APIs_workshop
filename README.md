@@ -1,10 +1,10 @@
 # Aprende sobre JSON y cómo usar APIs creando una con Python
 
-> Taller impartido como parte del AI Gaming 2021
+> [Taller impartido](https://youtu.be/SMqSIxaFKdc?t=3441) como parte del (AI Gaming 2021)[https://www.facebook.com/MSFTStudentAmbassadorsAmericas/?fref=tag]
 
 El objetivo principal del taller es la programación de una API web hecha con Python para entender el funcionamiento de las API de Microsoft Azure y el formato JSON.
 
-## Installation
+## Instalación
 
 Clonar el repositorio
 ```sh
