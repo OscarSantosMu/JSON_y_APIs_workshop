@@ -139,10 +139,10 @@ image_post_args.add_argument("size", type = int, help = "El tamaño de la imagen
 
 ```
 def post(self, image_id, **kwargs):
-        '''Método POST
+        '''Método POST'''
         args = image_post_args.parse_args()
         images[image_id] = args
-        return images[image_id], 201'''
+        return images[image_id], 201
 ```
 
 10. Probar el script request.py con lo siguiente
@@ -189,7 +189,7 @@ def delete(self, image_id):
         return '', 204
 ```
 
-Si se desea probar con request.py cabe mencionar que como no retorna un diccionario (los cuales son serializables) no se puede usar response.json()
+Si se desea probar con request.py cabe mencionar que como NO retorna un diccionario (los cuales son serializables) no se puede usar response.json()
 
 ```
 response = requests.delete(BASE_ENDPOINT + '/Storage/0')
@@ -315,14 +315,14 @@ db.session.commit()
 return imagen, 201
 ```
 
-25. Cambiar fields en los paquetes
+25. Cambiar fields en los paquetes (ya se había sado fields de marhmallow anteriormente, ahora se importa directamente String e Integer)
 
 ```
 from flask_restful import Api, Resource, reqparse, abort, marshal_with, fields
 from marshmallow.fields import String, Integer
 ```
 
-26. Reemplazar BodySchema
+26. Reemplazar BodySchema (para usar Integer y String directamente)
 
 ```
 class BodySchema(Schema):
@@ -333,7 +333,7 @@ class BodySchema(Schema):
     size = Integer()
 ```
 
-27. Crear diccionario
+27. Crear diccionario (fields,Integer y fields.String corresponden al implementado en flask_restful)
 
 ```
 resource_fields = {
@@ -344,13 +344,13 @@ resource_fields = {
 }
 ```
 
-28. Añadir el decorador a get y post
+28. Añadir el decorador a get y post, ya que regresan objetos que no son serializables. Y con este decorador arreglamos ese asunto.
 
 ```
 @marshal_with(resource_fields)
 ```
 
-29. Reemplazar delete
+29. Reemplazar delete (acá no es necesario el decorador anterior porque si regresa un diccionario, el cual es serializable)
 
 ```
 result = AzureStorageModel.query.filter_by(id=image_id).first()
